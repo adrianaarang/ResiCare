@@ -1,0 +1,66 @@
+[
+  {
+    "id": "hist-001",
+    "fecha": "2026-08-12",
+    "texto": "El residente de la 204 se quejó de sentirse inestable al ponerse de pie tras la siesta",
+    "residente_id": "res-204",
+    "categoria": "clinica",
+    "urgencia": "media"
+  },
+  {
+    "id": "hist-002",
+    "fecha": "2026-08-20",
+    "texto": "El residente de la 204 tuvo un mareo leve al levantarse de la cama por la mañana",
+    "residente_id": "res-204",
+    "categoria": "clinica",
+    "urgencia": "media"
+  },
+  {
+    "id": "hist-003",
+    "fecha": "2026-08-28",
+    "texto": "Encontraron al residente de la 204 sujetándose a la pared, decía sentirse mareado",
+    "residente_id": "res-204",
+    "categoria": "clinica",
+    "urgencia": "alta"
+  },
+  {
+    "id": "hist-004",
+    "fecha": "2026-07-15",
+    "texto": "El residente de la 112 mostró intención de salir del edificio por la puerta trasera",
+    "residente_id": "res-112",
+    "categoria": "clinica",
+    "urgencia": "alta"
+  },
+  {
+    "id": "hist-005",
+    "fecha": "2026-08-01",
+    "texto": "El residente de la 112 volvió a acercarse a la puerta principal sin avisar al personal",
+    "residente_id": "res-112",
+    "categoria": "clinica",
+    "urgencia": "alta"
+  },
+  {
+    "id": "hist-006",
+    "fecha": "2026-08-05",
+    "texto": "El residente de la 210 tosió durante varios minutos al tomar líquidos en la cena",
+    "residente_id": "res-210",
+    "categoria": "clinica",
+    "urgencia": "alta"
+  },
+  {
+    "id": "hist-007",
+    "fecha": "2026-06-10",
+    "texto": "Avería puntual en el ascensor de planta 2, resuelta en el mismo día",
+    "residente_id": null,
+    "categoria": "infraestructura_mantenimiento",
+    "urgencia": "media"
+  },
+  {
+    "id": "hist-008",
+    "fecha": "2026-08-18",
+    "texto": "El residente de la 118 refirió cansancio al subir un tramo corto de escaleras",
+    "residente_id": "res-118",
+    "categoria": "clinica",
+    "urgencia": "media"
+  }
+]

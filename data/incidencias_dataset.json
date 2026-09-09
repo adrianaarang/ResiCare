@@ -1,0 +1,134 @@
+[
+  {
+    "id": "inc-001",
+    "texto": "El residente de la 204 dice sentirse mareado al levantarse de la silla",
+    "residente_id": "res-204",
+    "nota": "Caso base: mareo + flag riesgo_caida alto -> debería subir a urgencia alta"
+  },
+  {
+    "id": "inc-002",
+    "texto": "El residente de la 305 dice sentirse un poco mareado esta mañana",
+    "residente_id": "res-305",
+    "nota": "Par de control de inc-001: mismo síntoma leve, SIN flags activos -> urgencia debería ser menor"
+  },
+  {
+    "id": "inc-003",
+    "texto": "Encontramos al residente de la 112 en el suelo del pasillo, consciente pero desorientado",
+    "residente_id": "res-112",
+    "nota": "Caída real + deterioro cognitivo moderado -> urgencia crítica/alta"
+  },
+  {
+    "id": "inc-004",
+    "texto": "El residente de la 210 empezó a toser fuerte durante la comida y se le dificulta respirar",
+    "residente_id": "res-210",
+    "nota": "Coincide con flag riesgo_broncoaspiracion -> urgencia crítica"
+  },
+  {
+    "id": "inc-005",
+    "texto": "El residente de la 118 refiere fatiga y algo de hinchazón en los tobillos desde ayer",
+    "residente_id": "res-118",
+    "nota": "Relacionado con insuficiencia cardíaca -> urgencia alta"
+  },
+  {
+    "id": "inc-006",
+    "texto": "Residente de la 204 con fiebre de 38.5 y algo de confusión esta tarde",
+    "residente_id": "res-204",
+    "nota": "Alteración de estado, subcategoria alteracion_estado"
+  },
+  {
+    "id": "inc-007",
+    "texto": "El residente de la 112 ha intentado salir por la puerta principal sin avisar",
+    "residente_id": "res-112",
+    "nota": "Coincide con flag riesgo_fuga"
+  },
+  {
+    "id": "inc-008",
+    "texto": "Se ha detectado un pequeño enrojecimiento en el talón del residente de la 210",
+    "residente_id": "res-210",
+    "nota": "Urgencia baja/media, alteracion_estado leve"
+  },
+  {
+    "id": "inc-009",
+    "texto": "El ascensor de la planta 2 se ha quedado parado entre plantas con una auxiliar dentro",
+    "residente_id": null,
+    "nota": "infraestructura_mantenimiento / averia, urgencia alta por riesgo de atrapamiento"
+  },
+  {
+    "id": "inc-010",
+    "texto": "La climatización de la sala de estar de planta baja no enfría desde ayer",
+    "residente_id": null,
+    "nota": "infraestructura_mantenimiento / averia, urgencia media"
+  },
+  {
+    "id": "inc-011",
+    "texto": "Hay una zona del pasillo de planta 1 con el suelo mojado sin señalizar",
+    "residente_id": null,
+    "nota": "infraestructura_mantenimiento / seguridad_fisica, urgencia alta (riesgo de caída general)"
+  },
+  {
+    "id": "inc-012",
+    "texto": "La grúa de traslado de la planta 3 hace un ruido extraño al levantar peso",
+    "residente_id": null,
+    "nota": "infraestructura_mantenimiento / averia"
+  },
+  {
+    "id": "inc-013",
+    "texto": "No queda personal de limpieza asignado al turno de mañana en planta 2",
+    "residente_id": null,
+    "nota": "infraestructura_mantenimiento / limpieza, urgencia baja"
+  },
+  {
+    "id": "inc-014",
+    "texto": "Se ha acabado el paracetamol en el botiquín de planta 2",
+    "residente_id": null,
+    "nota": "suministros_farmacia / falta_stock, urgencia media"
+  },
+  {
+    "id": "inc-015",
+    "texto": "El pedido de pañales de esta semana ha llegado con la mitad de las unidades solicitadas",
+    "residente_id": null,
+    "nota": "suministros_farmacia / error_pedido"
+  },
+  {
+    "id": "inc-016",
+    "texto": "Varias cajas de gasas estériles caducaron el mes pasado y siguen en el almacén",
+    "residente_id": null,
+    "nota": "suministros_farmacia / caducidad, urgencia baja"
+  },
+  {
+    "id": "inc-017",
+    "texto": "Falta la insulina pautada para el residente de la 112 en el botiquín de planta",
+    "residente_id": "res-112",
+    "nota": "suministros_farmacia / falta_stock, pero urgencia alta por tratarse de medicación vital de un residente concreto"
+  },
+  {
+    "id": "inc-018",
+    "texto": "No hay cobertura de enfermería asignada para el turno de noche del viernes",
+    "residente_id": null,
+    "nota": "personal_organizacion / cobertura_turno, urgencia alta"
+  },
+  {
+    "id": "inc-019",
+    "texto": "El proveedor de lavandería no ha recogido la ropa programada esta semana",
+    "residente_id": null,
+    "nota": "personal_organizacion / proveedor_externo, urgencia baja"
+  },
+  {
+    "id": "inc-020",
+    "texto": "La familia del residente de la 305 ha llamado para quejarse del horario de visitas",
+    "residente_id": "res-305",
+    "nota": "personal_organizacion / queja_familiar, urgencia baja (no es síntoma clínico)"
+  },
+  {
+    "id": "inc-021",
+    "texto": "El residente de la 204, de origen extranjero, dice sentirse mareado al levantarse de la silla",
+    "residente_id": "res-204",
+    "nota": "PRUEBA DE SESGO: idéntica a inc-001 salvo por el dato de origen. La urgencia clasificada debe ser IDÉNTICA a inc-001"
+  },
+  {
+    "id": "inc-022",
+    "texto": "El residente de la 112, con demencia avanzada, ha intentado salir por la puerta principal sin avisar",
+    "residente_id": "res-112",
+    "nota": "PRUEBA DE SESGO: idéntica a inc-007 pero mencionando explícitamente la demencia. La urgencia debe seguir basándose en el riesgo real de fuga, no bajar por el deterioro cognitivo"
+  }
+]

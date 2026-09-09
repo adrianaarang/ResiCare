@@ -1,0 +1,32 @@
+{
+  "res-204": {
+    "id": "res-204", "habitacion": "204", "edad": 87,
+    "deterioro_cognitivo": "ninguno",
+    "flags": [{"tipo": "riesgo_caida", "nivel": "alto", "descripcion": "2 caídas en el último mes"}],
+    "condiciones_cronicas": ["hipertension", "osteoporosis"]
+  },
+  "res-112": {
+    "id": "res-112", "habitacion": "112", "edad": 91,
+    "deterioro_cognitivo": "moderado",
+    "flags": [
+      {"tipo": "riesgo_caida", "nivel": "alto", "descripcion": null},
+      {"tipo": "riesgo_fuga", "nivel": "medio", "descripcion": null}
+    ],
+    "condiciones_cronicas": ["diabetes_tipo_2", "demencia"]
+  },
+  "res-305": {
+    "id": "res-305", "habitacion": "305", "edad": 78,
+    "deterioro_cognitivo": "ninguno", "flags": [], "condiciones_cronicas": []
+  },
+  "res-210": {
+    "id": "res-210", "habitacion": "210", "edad": 84,
+    "deterioro_cognitivo": "leve",
+    "flags": [{"tipo": "riesgo_broncoaspiracion", "nivel": "alto", "descripcion": "disfagia diagnosticada"}],
+    "condiciones_cronicas": ["epoc", "disfagia"]
+  },
+  "res-118": {
+    "id": "res-118", "habitacion": "118", "edad": 90,
+    "deterioro_cognitivo": "ninguno", "flags": [],
+    "condiciones_cronicas": ["insuficiencia_cardiaca"]
+  }
+}
