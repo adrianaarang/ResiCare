@@ -26,6 +26,7 @@ from app.agent.orchestrator import ejecutar_agente
 from app.providers.ollama_provider import OllamaProvider
 from app.providers.comercial_provider import GroqProvider
 from app.core.retry import validar_con_reintento, TriajeFallidoError
+from app.core.metrics import registro_global
 from app.rag.vectorstore import (
     TOOL_BUSCAR_INCIDENCIAS_SIMILARES,
     buscar_incidencias_similares,
@@ -97,7 +98,17 @@ def _clasificar_directo(provider, texto: str, residente_id: Optional[str]):
         esquema=TriajeIncidencia,
         max_intentos=3,
     )
-    return incidencia, intentos, metricas_capturadas["ultima"]
+
+    metrica = metricas_capturadas["ultima"]
+    registro_global.registrar(
+        proveedor=metrica.proveedor,
+        tokens_entrada=metrica.tokens_entrada,
+        tokens_salida=metrica.tokens_salida,
+        latencia_ms=metrica.latencia_ms,
+        coste_usd=metrica.coste_usd,
+    )
+
+    return incidencia, intentos, metrica
 
 
 def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
@@ -128,6 +139,11 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
 @app.get("/salud")
 def salud():
     return {"estado": "ok"}
+
+
+@app.get("/metricas")
+def metricas():
+    return registro_global.resumen()
 
 
 @app.post("/triaje")
