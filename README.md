@@ -93,4 +93,3 @@ pytest tests/ -v
 - **Alcance recortado a incidencias clínicas**: el proyecto se centra en el libro de novedades de enfermería, no en incidencias de infraestructura, farmacia o personal en general.
 - **El agente fuerza el uso de herramientas de forma limitada**: se probó exigir el uso obligatorio de ambas herramientas (consultar residente + buscar reincidencia) antes de aceptar la respuesta del modelo local, pero esto generaba bucles inestables con el modelo pequeño (llama3.2:3b). Se priorizó la estabilidad del servicio sobre la garantía estricta, documentando esta limitación del modelo local frente al comercial.
 - **La comparación entre proveedores usa clasificación directa** (sin agente/tool calling) para ambos, con el contexto del residente ya resuelto e inyectado en el prompt — así se compara la calidad del modelo en sí, sin que la capacidad de tool calling de cada uno distorsione el resultado.
-EOF
