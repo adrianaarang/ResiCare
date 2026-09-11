@@ -1,7 +1,8 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import "./App.css";
 import TriajeIndividual from "./components/TriajeIndividual";
 import ComparacionProveedores from "./components/ComparacionProveedores";
+import LibroIncidencias from "./components/LibroIncidencias";
 
 function App() {
   const [pestanaActiva, setPestanaActiva] = useState("individual");
@@ -26,11 +27,18 @@ function App() {
         >
           Comparar proveedores
         </button>
+        <button
+          className={pestanaActiva === "libro" ? "activa" : ""}
+          onClick={() => setPestanaActiva("libro")}
+        >
+          Libro de Incidencias
+        </button>
       </nav>
 
       <main>
         {pestanaActiva === "individual" && <TriajeIndividual />}
         {pestanaActiva === "comparar" && <ComparacionProveedores />}
+        {pestanaActiva === "libro" && <LibroIncidencias />}
       </main>
     </div>
   );

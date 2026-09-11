@@ -48,3 +48,84 @@ body {
   border-bottom-color: #0F6E56;
   font-weight: 600;
 }
+
+.filtro-libro {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filtro-libro input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #E0DDD3;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.filtro-libro button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #0F6E56;
+  color: white;
+  cursor: pointer;
+}
+
+.lista-incidencias {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tarjeta-incidencia {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border: 1px solid #E0DDD3;
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.etiqueta-urgencia {
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.tarjeta-fecha {
+  font-size: 0.8rem;
+  color: #5F5E5A;
+}
+
+.tarjeta-texto {
+  font-weight: 600;
+  margin: 0.25rem 0;
+}
+
+.tarjeta-detalle {
+  font-size: 0.85rem;
+  color: #5F5E5A;
+  margin: 0.25rem 0;
+}
+
+.tarjeta-razonamiento {
+  font-size: 0.85rem;
+  color: #1A1A1A;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.error {
+  color: #B3261E;
+}

@@ -1,5 +1,6 @@
-"""
+﻿"""
 Esquema de salida del LLM para el Libro de Incidencias de Enfermeria.
+
 Alcance recortado a solo incidencias clinicas (decision de producto:
 ResiCare se centra en el libro de novedades de enfermeria, no en
 incidencias de infraestructura/farmacia/personal en general).
@@ -16,12 +17,14 @@ class TriajeIncidencia(BaseModel):
     texto_original: str
     categoria: Categoria
     urgencia: Urgencia
-    resumen: str = ""
-    razonamiento: str = ""
+    resumen: str
+    razonamiento: str
 
     @field_validator("resumen")
     @classmethod
-    def resumen_max_10_palabras(cls, v: str) -> str:
+    def resumen_no_vacio_y_max_10_palabras(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("El resumen no puede estar vacio")
         if len(v.split()) > 10:
             raise ValueError(f"El resumen tiene {len(v.split())} palabras, maximo 10")
         return v
