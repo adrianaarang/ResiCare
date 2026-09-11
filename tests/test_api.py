@@ -20,8 +20,6 @@ def test_salud_responde_ok():
 
 
 def test_triaje_con_input_valido_devuelve_200():
-    """El endpoint responde correctamente ante una incidencia bien formada
-    cuando el agente devuelve un resultado valido a la primera."""
     contenido_valido = json.dumps({
         "texto_original": "El residente de la 204 dice sentirse mareado",
         "categoria": "caida",
@@ -30,7 +28,8 @@ def test_triaje_con_input_valido_devuelve_200():
         "razonamiento": "El residente presenta un sintoma con flag de riesgo activo.",
     })
 
-    with patch("app.main.ejecutar_agente", return_value=contenido_valido):
+    with patch("app.main.ejecutar_agente", return_value=contenido_valido), \
+         patch("app.main.indexar_nueva_incidencia"):
         respuesta = cliente.post("/triaje", json={
             "texto": "El residente de la 204 dice sentirse mareado",
             "residente_id": "res-204",
@@ -47,9 +46,6 @@ def test_triaje_con_input_valido_devuelve_200():
 
 
 def test_triaje_ante_alucinacion_persistente_devuelve_422_controlado():
-    """Si el modelo alucina un formato invalido en TODOS los reintentos,
-    el endpoint debe responder con un error controlado (422), no un 500
-    ni una caida del servicio."""
     contenido_invalido = json.dumps({
         "texto_original": "mareo",
         "categoria": "caida",
@@ -71,8 +67,6 @@ def test_triaje_ante_alucinacion_persistente_devuelve_422_controlado():
 
 
 def test_triaje_con_texto_vacio_es_rechazado_por_pydantic():
-    """Validacion basica de entrada: FastAPI/Pydantic deben rechazar un
-    payload que no cumple el esquema de la peticion (texto ausente)."""
     respuesta = cliente.post("/triaje", json={
         "residente_id": "res-204",
         "modo": "unico",

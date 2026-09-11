@@ -27,10 +27,12 @@ from app.providers.ollama_provider import OllamaProvider
 from app.providers.comercial_provider import GroqProvider
 from app.core.retry import validar_con_reintento, TriajeFallidoError
 from app.core.metrics import registro_global
+from app.core.almacen import inicializar_db, guardar_incidencia, listar_incidencias
 from app.rag.vectorstore import (
     TOOL_BUSCAR_INCIDENCIAS_SIMILARES,
     buscar_incidencias_similares,
     indexar_historico,
+    indexar_nueva_incidencia,
 )
 
 app = FastAPI(title="ResiCare - Motor de triaje")
@@ -43,6 +45,7 @@ app.add_middleware(
 )
 
 indexar_historico()
+inicializar_db()
 
 HERRAMIENTAS_AGENTE = [TOOL_CONSULTAR_RESIDENTE, TOOL_BUSCAR_INCIDENCIAS_SIMILARES]
 EJECUTORES_AGENTE = {
@@ -74,6 +77,18 @@ def _obtener_residente(residente_id: Optional[str]) -> Optional[Residente]:
     if "error" in resultado:
         return None
     return Residente(**resultado)
+
+
+def _guardar_en_libro_y_rag(incidencia: TriajeIncidencia, proveedor: str) -> None:
+    incidencia_id, fecha_iso = guardar_incidencia(incidencia, proveedor=proveedor)
+    indexar_nueva_incidencia(
+        incidencia_id=f"libro-{incidencia_id}",
+        texto=incidencia.texto_original,
+        residente_id=incidencia.residente_id,
+        categoria=incidencia.categoria,
+        urgencia=incidencia.urgencia,
+        fecha_iso=fecha_iso,
+    )
 
 
 def _clasificar_directo(provider, texto: str, residente_id: Optional[str]):
@@ -146,12 +161,18 @@ def metricas():
     return registro_global.resumen()
 
 
+@app.get("/libro")
+def libro(residente_id: Optional[str] = None, limite: int = 100):
+    return listar_incidencias(residente_id=residente_id, limite=limite)
+
+
 @app.post("/triaje")
 def triaje(payload: TriajeRequest):
     try:
         if payload.modo == "unico":
             if payload.proveedor == "ollama":
                 incidencia, intentos = _clasificar_con_agente(payload.texto, payload.residente_id)
+                _guardar_en_libro_y_rag(incidencia, proveedor="ollama")
                 return {
                     "proveedor": "ollama",
                     "modo": "agente_react",
@@ -163,6 +184,7 @@ def triaje(payload: TriajeRequest):
                 incidencia, intentos, metrica = _clasificar_directo(
                     provider, payload.texto, payload.residente_id
                 )
+                _guardar_en_libro_y_rag(incidencia, proveedor="groq")
                 return {
                     "proveedor": "groq",
                     "modo": "directo",
@@ -180,6 +202,7 @@ def triaje(payload: TriajeRequest):
                     incidencia, intentos, metrica = _clasificar_directo(
                         provider, payload.texto, payload.residente_id
                     )
+                    _guardar_en_libro_y_rag(incidencia, proveedor=nombre)
                     resultados[nombre] = {
                         "intentos": intentos,
                         "resultado": incidencia.model_dump(),
