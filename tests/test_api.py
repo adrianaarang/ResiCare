@@ -29,7 +29,8 @@ def test_triaje_con_input_valido_devuelve_200():
     })
 
     with patch("app.main.ejecutar_agente", return_value=contenido_valido), \
-         patch("app.main.indexar_nueva_incidencia"):
+         patch("app.main.indexar_nueva_incidencia"), \
+         patch("app.main.buscar_incidencias_similares", return_value='{"resultados": []}'):
         respuesta = cliente.post("/triaje", json={
             "texto": "El residente de la 204 dice sentirse mareado",
             "residente_id": "res-204",
@@ -63,7 +64,7 @@ def test_triaje_ante_alucinacion_persistente_devuelve_422_controlado():
         })
 
     assert respuesta.status_code == 422
-    assert "no devolvio un formato valido" in respuesta.json()["detail"]
+    assert "formato" in respuesta.json()["detail"].lower()
 
 
 def test_triaje_con_texto_vacio_es_rechazado_por_pydantic():

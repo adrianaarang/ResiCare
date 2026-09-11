@@ -1,7 +1,14 @@
 ﻿"""
 API principal de ResiCare: expone el motor de triaje via FastAPI.
+
+Dos modos de uso:
+- modo="unico": clasifica con un solo proveedor. Con Ollama, usa el agente
+  completo (ReAct + tool calling). Con Groq, clasifica directamente con el
+  contexto del residente ya resuelto.
+- modo="comparar": clasifica con AMBOS proveedores sobre el mismo texto.
 """
 import json
+import uuid
 from typing import Optional, Literal
 
 from dotenv import load_dotenv
@@ -14,7 +21,12 @@ from pydantic import BaseModel
 from app.schemas.triaje import TriajeIncidencia
 from app.schemas.residente import Residente
 from app.agent.prompts import SYSTEM_PROMPT, construir_user_prompt
-from app.agent.tools import consultar_residente, TOOL_CONSULTAR_RESIDENTE, HERRAMIENTAS_DISPONIBLES
+from app.agent.tools import (
+    consultar_residente,
+    TOOL_CONSULTAR_RESIDENTE,
+    HERRAMIENTAS_DISPONIBLES,
+    _cargar_residentes,
+)
 from app.agent.orchestrator import ejecutar_agente
 from app.providers.ollama_provider import OllamaProvider
 from app.providers.comercial_provider import GroqProvider
@@ -61,6 +73,8 @@ class TriajeRequest(BaseModel):
     residente_id: Optional[str] = None
     modo: Literal["unico", "comparar"] = "unico"
     proveedor: Literal["ollama", "groq"] = "ollama"
+    turno: Optional[Literal["manana", "tarde", "noche"]] = None
+    fecha_incidente: Optional[str] = None
 
 
 def _obtener_residente(residente_id: Optional[str]) -> Optional[Residente]:
@@ -72,16 +86,58 @@ def _obtener_residente(residente_id: Optional[str]) -> Optional[Residente]:
     return Residente(**resultado)
 
 
-def _guardar_en_libro_y_rag(incidencia: TriajeIncidencia, proveedor: str) -> None:
-    incidencia_id, fecha_iso = guardar_incidencia(incidencia, proveedor=proveedor)
+def _guardar_en_libro_y_rag(
+    incidencia: TriajeIncidencia,
+    proveedor: str,
+    turno: Optional[str] = None,
+    fecha_incidente: Optional[str] = None,
+    reincidencia: Optional[dict] = None,
+) -> None:
+    es_reincidencia = bool(reincidencia and reincidencia.get("detectada"))
+    fecha_previa = None
+    casos_json = None
+    if es_reincidencia and reincidencia.get("casos"):
+        fecha_previa = reincidencia["casos"][0].get("fecha")
+        casos_json = json.dumps(reincidencia["casos"])
+
+    incidencia_id, fecha_iso = guardar_incidencia(
+        incidencia,
+        proveedor=proveedor,
+        turno=turno or "sin_especificar",
+        fecha_incidente=fecha_incidente,
+        es_reincidencia=es_reincidencia,
+        fecha_reincidencia_previa=fecha_previa,
+        casos_reincidencia_json=casos_json,
+    )
     indexar_nueva_incidencia(
-        incidencia_id=f"libro-{incidencia_id}",
+        incidencia_id=f"libro-{uuid.uuid4().hex}",
         texto=incidencia.texto_original,
         residente_id=incidencia.residente_id,
         categoria=incidencia.categoria,
         urgencia=incidencia.urgencia,
         fecha_iso=fecha_iso,
     )
+
+
+def _asegurar_residente_id(incidencia: TriajeIncidencia, residente_id_conocido: Optional[str]) -> TriajeIncidencia:
+    if residente_id_conocido and incidencia.residente_id != residente_id_conocido:
+        return incidencia.model_copy(update={"residente_id": residente_id_conocido})
+    return incidencia
+
+
+def _detectar_reincidencia(texto: str, residente_id: Optional[str], umbral_similitud: float = 0.6) -> dict:
+    if not residente_id:
+        return {"detectada": False, "casos": []}
+
+    resultado = json.loads(buscar_incidencias_similares(texto, residente_id=residente_id))
+    casos_relevantes = [
+        r for r in resultado.get("resultados", [])
+        if r.get("similitud", 0) >= umbral_similitud
+    ]
+    return {
+        "detectada": len(casos_relevantes) > 0,
+        "casos": casos_relevantes,
+    }
 
 
 def _clasificar_directo(provider, texto: str, residente_id: Optional[str]):
@@ -164,6 +220,15 @@ def salud():
     return {"estado": "ok"}
 
 
+@app.get("/residentes")
+def residentes():
+    datos = _cargar_residentes()
+    return [
+        {"id": r["id"], "habitacion": r["habitacion"]}
+        for r in sorted(datos.values(), key=lambda r: r["habitacion"])
+    ]
+
+
 @app.get("/metricas")
 def metricas():
     return registro_global.resumen()
@@ -180,25 +245,39 @@ def triaje(payload: TriajeRequest):
         if payload.modo == "unico":
             if payload.proveedor == "ollama":
                 incidencia, intentos = _clasificar_con_agente(payload.texto, payload.residente_id)
-                _guardar_en_libro_y_rag(incidencia, proveedor="ollama")
+                incidencia = _asegurar_residente_id(incidencia, payload.residente_id)
+                reincidencia = _detectar_reincidencia(payload.texto, incidencia.residente_id)
+                _guardar_en_libro_y_rag(
+                    incidencia, proveedor="ollama",
+                    turno=payload.turno, fecha_incidente=payload.fecha_incidente,
+                    reincidencia=reincidencia,
+                )
                 return {
                     "proveedor": "ollama",
                     "modo": "agente_react",
                     "intentos": intentos,
                     "resultado": incidencia.model_dump(),
+                    "reincidencia": reincidencia,
                 }
             else:
                 provider = GroqProvider()
                 incidencia, intentos, metrica = _clasificar_directo(
                     provider, payload.texto, payload.residente_id
                 )
-                _guardar_en_libro_y_rag(incidencia, proveedor="groq")
+                incidencia = _asegurar_residente_id(incidencia, payload.residente_id)
+                reincidencia = _detectar_reincidencia(payload.texto, incidencia.residente_id)
+                _guardar_en_libro_y_rag(
+                    incidencia, proveedor="groq",
+                    turno=payload.turno, fecha_incidente=payload.fecha_incidente,
+                    reincidencia=reincidencia,
+                )
                 return {
                     "proveedor": "groq",
                     "modo": "directo",
                     "intentos": intentos,
                     "resultado": incidencia.model_dump(),
                     "metricas": metrica.model_dump(),
+                    "reincidencia": reincidencia,
                 }
 
         else:
@@ -210,11 +289,18 @@ def triaje(payload: TriajeRequest):
                     incidencia, intentos, metrica = _clasificar_directo(
                         provider, payload.texto, payload.residente_id
                     )
-                    _guardar_en_libro_y_rag(incidencia, proveedor=nombre)
+                    incidencia = _asegurar_residente_id(incidencia, payload.residente_id)
+                    reincidencia = _detectar_reincidencia(payload.texto, incidencia.residente_id)
+                    _guardar_en_libro_y_rag(
+                        incidencia, proveedor=nombre,
+                        turno=payload.turno, fecha_incidente=payload.fecha_incidente,
+                        reincidencia=reincidencia,
+                    )
                     resultados[nombre] = {
                         "intentos": intentos,
                         "resultado": incidencia.model_dump(),
                         "metricas": metrica.model_dump(),
+                        "reincidencia": reincidencia,
                     }
                 except (TriajeFallidoError, ValueError, RuntimeError) as e:
                     resultados[nombre] = {"error": str(e)}

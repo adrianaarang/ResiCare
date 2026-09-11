@@ -32,8 +32,8 @@ class OllamaProvider(LLMProvider):
             "prompt": prompt_completo,
             "stream": False,
             "format": json_schema if json_schema else "json",
-            "options": {"num_predict": 1024},
-        }
+            "options": {"num_predict": 1024, "temperature": 0},      
+              }
 
         inicio = time.perf_counter()
         respuesta = requests.post(OLLAMA_URL, json=payload, timeout=60)

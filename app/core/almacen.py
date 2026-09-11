@@ -1,9 +1,5 @@
 """
-Persistencia del Libro de Incidencias en SQLite. Cada incidencia triada
-con exito se guarda aqui, con marca de tiempo y el proveedor que la genero.
-
-SQLite se eligio porque es un unico archivo (sin servidor aparte que
-levantar) y viene incluido en la libreria estandar de Python.
+Persistencia del Libro de Incidencias en SQLite.
 """
 import sqlite3
 from pathlib import Path
@@ -27,26 +23,45 @@ def inicializar_db() -> None:
             CREATE TABLE IF NOT EXISTS incidencias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 fecha TEXT NOT NULL,
+                fecha_incidente TEXT NOT NULL,
+                turno TEXT NOT NULL,
                 residente_id TEXT,
                 texto_original TEXT NOT NULL,
                 categoria TEXT NOT NULL,
                 urgencia TEXT NOT NULL,
                 resumen TEXT NOT NULL,
                 razonamiento TEXT NOT NULL,
-                proveedor TEXT NOT NULL
+                proveedor TEXT NOT NULL,
+                es_reincidencia INTEGER NOT NULL DEFAULT 0,
+                fecha_reincidencia_previa TEXT,
+                casos_reincidencia_json TEXT
             )
         """)
 
 
-def guardar_incidencia(incidencia: TriajeIncidencia, proveedor: str) -> tuple[int, str]:
+def guardar_incidencia(
+    incidencia: TriajeIncidencia,
+    proveedor: str,
+    turno: str,
+    fecha_incidente: Optional[str] = None,
+    es_reincidencia: bool = False,
+    fecha_reincidencia_previa: Optional[str] = None,
+    casos_reincidencia_json: Optional[str] = None,
+) -> tuple[int, str]:
     fecha_iso = datetime.now(timezone.utc).isoformat()
+    fecha_incidente = fecha_incidente or datetime.now(timezone.utc).date().isoformat()
+
     with _conectar() as conn:
         cursor = conn.execute(
             """INSERT INTO incidencias
-               (fecha, residente_id, texto_original, categoria, urgencia, resumen, razonamiento, proveedor)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+               (fecha, fecha_incidente, turno, residente_id, texto_original,
+                categoria, urgencia, resumen, razonamiento, proveedor,
+                es_reincidencia, fecha_reincidencia_previa, casos_reincidencia_json)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 fecha_iso,
+                fecha_incidente,
+                turno,
                 incidencia.residente_id,
                 incidencia.texto_original,
                 incidencia.categoria,
@@ -54,6 +69,9 @@ def guardar_incidencia(incidencia: TriajeIncidencia, proveedor: str) -> tuple[in
                 incidencia.resumen,
                 incidencia.razonamiento,
                 proveedor,
+                1 if es_reincidencia else 0,
+                fecha_reincidencia_previa,
+                casos_reincidencia_json,
             ),
         )
         return cursor.lastrowid, fecha_iso

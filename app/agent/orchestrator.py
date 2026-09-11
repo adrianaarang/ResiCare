@@ -57,7 +57,7 @@ def ejecutar_agente(
             "messages": mensajes,
             "tools": herramientas,
             "stream": False,
-            "options": {"num_predict": 1024},
+            "options": {"num_predict": 1024, "temperature": 0},
         }
         if json_schema:
             payload["format"] = json_schema
