@@ -124,6 +124,8 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
     if residente_id:
         user_prompt_base += f" (id: {residente_id})"
 
+    metricas_capturadas = {}
+
     def llamar(system_prompt: str, user_prompt: str) -> str:
         return ejecutar_agente(
             modelo="llama3.2:3b",
@@ -134,6 +136,7 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
             json_schema=TriajeIncidencia.model_json_schema(),
             herramientas_obligatorias=None,
             max_turnos=6,
+            metricas_out=metricas_capturadas,
         )
 
     incidencia, intentos = validar_con_reintento(
@@ -143,6 +146,16 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
         esquema=TriajeIncidencia,
         max_intentos=3,
     )
+
+    if metricas_capturadas:
+        registro_global.registrar(
+            proveedor="ollama",
+            tokens_entrada=metricas_capturadas.get("tokens_entrada", 0),
+            tokens_salida=metricas_capturadas.get("tokens_salida", 0),
+            latencia_ms=metricas_capturadas.get("latencia_ms", 0.0),
+            coste_usd=0.0,
+        )
+
     return incidencia, intentos
 
 

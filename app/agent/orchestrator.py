@@ -6,6 +6,7 @@ en el prompt.
 """
 import inspect
 import json
+import time
 import requests
 from typing import Callable
 
@@ -36,17 +37,14 @@ def ejecutar_agente(
     json_schema: dict | None = None,
     max_turnos: int = 5,
     herramientas_obligatorias: set[str] | None = None,
+    metricas_out: dict | None = None,
 ) -> str:
-    """
-    Ejecuta el ciclo ReAct contra Ollama (/api/chat, que soporta tool calling).
-
-    herramientas_obligatorias: nombres de herramientas que el modelo DEBE
-    haber llamado al menos una vez antes de que aceptemos su respuesta
-    final. Si intenta responder sin haberlas usado, se le recuerda
-    explicitamente y se le da otra vuelta.
-    """
     herramientas_obligatorias = herramientas_obligatorias or set()
     herramientas_llamadas: set[str] = set()
+
+    tokens_entrada_total = 0
+    tokens_salida_total = 0
+    latencia_total_ms = 0.0
 
     mensajes = [
         {"role": "system", "content": system_prompt},
@@ -64,9 +62,15 @@ def ejecutar_agente(
         if json_schema:
             payload["format"] = json_schema
 
+        inicio = time.perf_counter()
         respuesta = requests.post(OLLAMA_CHAT_URL, json=payload, timeout=60)
         respuesta.raise_for_status()
+        latencia_total_ms += (time.perf_counter() - inicio) * 1000
+
         data = respuesta.json()
+        tokens_entrada_total += data.get("prompt_eval_count", 0)
+        tokens_salida_total += data.get("eval_count", 0)
+
         mensaje_modelo = data["message"]
         mensajes.append(mensaje_modelo)
 
@@ -98,6 +102,13 @@ def ejecutar_agente(
                 ),
             })
             continue
+
+        if metricas_out is not None:
+            metricas_out.update({
+                "tokens_entrada": tokens_entrada_total,
+                "tokens_salida": tokens_salida_total,
+                "latencia_ms": round(latencia_total_ms, 1),
+            })
 
         return mensaje_modelo["content"]
 
