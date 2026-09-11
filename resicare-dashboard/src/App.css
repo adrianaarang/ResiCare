@@ -251,3 +251,46 @@ body {
   font-weight: 600;
   margin-left: auto;
 }
+.descripcion-comparar {
+  color: #5F5E5A;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.grid-comparacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.columna-comparacion h4 {
+  margin: 0 0 0.75rem;
+  color: #0F6E56;
+}
+
+.metricas-comparacion {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #E0DDD3;
+  font-size: 0.8rem;
+}
+
+.metricas-comparacion div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.metricas-comparacion span {
+  color: #5F5E5A;
+}
+
+@media (max-width: 700px) {
+  .grid-comparacion {
+    grid-template-columns: 1fr;
+  }
+}
