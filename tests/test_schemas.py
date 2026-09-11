@@ -1,7 +1,6 @@
 """
-Tests del esquema Pydantic TriajeIncidencia: casos validos y las
-alucinaciones estructurales que ya vimos en la practica (resumen
-demasiado largo, categoria/subcategoria inconsistentes).
+Tests del esquema Pydantic TriajeIncidencia (alcance clinico) y las
+alucinaciones estructurales que ya vimos en la practica.
 """
 import pytest
 from pydantic import ValidationError
@@ -12,13 +11,12 @@ from app.schemas.triaje import TriajeIncidencia
 def test_incidencia_valida_se_acepta():
     incidencia = TriajeIncidencia(
         texto_original="El residente de la 204 dice sentirse mareado",
-        categoria="clinica",
-        subcategoria="caida",
+        categoria="caida",
         urgencia="alta",
         resumen="Mareo con riesgo de caida activo",
         razonamiento="El residente presenta un sintoma corporal con flag de riesgo activo.",
     )
-    assert incidencia.categoria == "clinica"
+    assert incidencia.categoria == "caida"
     assert incidencia.departamento == "enfermeria"
 
 
@@ -27,23 +25,9 @@ def test_resumen_demasiado_largo_es_rechazado():
     with pytest.raises(ValidationError):
         TriajeIncidencia(
             texto_original="mareo",
-            categoria="clinica",
-            subcategoria="caida",
+            categoria="caida",
             urgencia="alta",
             resumen="Este es un resumen deliberadamente muy largo que supera las diez palabras permitidas",
-            razonamiento="detalle",
-        )
-
-
-def test_subcategoria_incoherente_con_categoria_es_rechazada():
-    """Alucinacion real: el modelo mezcla una subcategoria de otra categoria (ej. 'averia' en 'clinica')."""
-    with pytest.raises(ValidationError):
-        TriajeIncidencia(
-            texto_original="mareo",
-            categoria="clinica",
-            subcategoria="averia",
-            urgencia="alta",
-            resumen="resumen corto",
             razonamiento="detalle",
         )
 
@@ -54,7 +38,6 @@ def test_categoria_fuera_del_catalogo_es_rechazada():
         TriajeIncidencia(
             texto_original="mareo",
             categoria="urgencia_medica",
-            subcategoria="caida",
             urgencia="alta",
             resumen="resumen corto",
             razonamiento="detalle",
@@ -62,29 +45,16 @@ def test_categoria_fuera_del_catalogo_es_rechazada():
 
 
 @pytest.mark.parametrize(
-    "categoria,departamento_esperado",
-    [
-        ("clinica", "enfermeria"),
-        ("suministros_farmacia", "farmacia"),
-        ("infraestructura_mantenimiento", "mantenimiento"),
-        ("personal_organizacion", "direccion_rrhh"),
-    ],
+    "categoria",
+    ["caida", "alteracion_estado", "medicacion", "constantes_vitales"],
 )
-def test_departamento_se_deriva_correctamente(categoria, departamento_esperado):
-    """El departamento nunca lo decide el LLM, se calcula: menos superficie de alucinacion."""
-    subcategoria_valida = {
-        "clinica": "caida",
-        "suministros_farmacia": "falta_stock",
-        "infraestructura_mantenimiento": "averia",
-        "personal_organizacion": "cobertura_turno",
-    }[categoria]
-
+def test_departamento_siempre_es_enfermeria(categoria):
+    """Con el alcance recortado a clinico, el departamento es siempre enfermeria."""
     incidencia = TriajeIncidencia(
         texto_original="texto",
         categoria=categoria,
-        subcategoria=subcategoria_valida,
         urgencia="media",
         resumen="resumen corto",
         razonamiento="detalle",
     )
-    assert incidencia.departamento == departamento_esperado
+    assert incidencia.departamento == "enfermeria"

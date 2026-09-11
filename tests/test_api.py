@@ -24,8 +24,7 @@ def test_triaje_con_input_valido_devuelve_200():
     cuando el agente devuelve un resultado valido a la primera."""
     contenido_valido = json.dumps({
         "texto_original": "El residente de la 204 dice sentirse mareado",
-        "categoria": "clinica",
-        "subcategoria": "caida",
+        "categoria": "caida",
         "urgencia": "alta",
         "resumen": "Mareo con riesgo de caida",
         "razonamiento": "El residente presenta un sintoma con flag de riesgo activo.",
@@ -42,7 +41,7 @@ def test_triaje_con_input_valido_devuelve_200():
     assert respuesta.status_code == 200
     cuerpo = respuesta.json()
     assert cuerpo["proveedor"] == "ollama"
-    assert cuerpo["resultado"]["categoria"] == "clinica"
+    assert cuerpo["resultado"]["categoria"] == "caida"
     assert cuerpo["resultado"]["urgencia"] == "alta"
     assert cuerpo["intentos"] == 1
 
@@ -53,8 +52,7 @@ def test_triaje_ante_alucinacion_persistente_devuelve_422_controlado():
     ni una caida del servicio."""
     contenido_invalido = json.dumps({
         "texto_original": "mareo",
-        "categoria": "clinica",
-        "subcategoria": "caida",
+        "categoria": "caida",
         "urgencia": "alta",
         "resumen": "Este resumen tiene claramente muchas mas de las diez palabras que el esquema permite",
         "razonamiento": "detalle",
