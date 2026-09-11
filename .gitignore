@@ -1,1 +1,3 @@
 .env
+tests/test_libro_incidencias.db
+data/libro_incidencias.db

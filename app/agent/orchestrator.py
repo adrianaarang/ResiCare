@@ -35,7 +35,19 @@ def ejecutar_agente(
     ejecutores: dict[str, Callable],
     json_schema: dict | None = None,
     max_turnos: int = 5,
+    herramientas_obligatorias: set[str] | None = None,
 ) -> str:
+    """
+    Ejecuta el ciclo ReAct contra Ollama (/api/chat, que soporta tool calling).
+
+    herramientas_obligatorias: nombres de herramientas que el modelo DEBE
+    haber llamado al menos una vez antes de que aceptemos su respuesta
+    final. Si intenta responder sin haberlas usado, se le recuerda
+    explicitamente y se le da otra vuelta.
+    """
+    herramientas_obligatorias = herramientas_obligatorias or set()
+    herramientas_llamadas: set[str] = set()
+
     mensajes = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
@@ -60,19 +72,33 @@ def ejecutar_agente(
 
         tool_calls = mensaje_modelo.get("tool_calls")
 
-        if not tool_calls:
-            return mensaje_modelo["content"]
+        if tool_calls:
+            for llamada in tool_calls:
+                nombre_funcion = llamada["function"]["name"]
+                argumentos = llamada["function"]["arguments"]
+                herramientas_llamadas.add(nombre_funcion)
 
-        for llamada in tool_calls:
-            nombre_funcion = llamada["function"]["name"]
-            argumentos = llamada["function"]["arguments"]
+                funcion = ejecutores.get(nombre_funcion)
+                if funcion is None:
+                    resultado = json.dumps({"error": f"Herramienta desconocida: {nombre_funcion}"})
+                else:
+                    resultado = _ejecutar_herramienta_segura(funcion, argumentos)
 
-            funcion = ejecutores.get(nombre_funcion)
-            if funcion is None:
-                resultado = json.dumps({"error": f"Herramienta desconocida: {nombre_funcion}"})
-            else:
-                resultado = _ejecutar_herramienta_segura(funcion, argumentos)
+                mensajes.append({"role": "tool", "content": resultado})
+            continue
 
-            mensajes.append({"role": "tool", "content": resultado})
+        faltantes = herramientas_obligatorias - herramientas_llamadas
+        if faltantes:
+            mensajes.append({
+                "role": "user",
+                "content": (
+                    f"Antes de responder, DEBES llamar todavia a estas herramientas "
+                    f"que no has usado: {', '.join(sorted(faltantes))}. "
+                    f"Hazlo ahora, no des la clasificacion final sin ellas."
+                ),
+            })
+            continue
+
+        return mensaje_modelo["content"]
 
     raise RuntimeError(f"El agente no llego a una respuesta final tras {max_turnos} turnos")

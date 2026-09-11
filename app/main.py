@@ -1,12 +1,5 @@
 ﻿"""
 API principal de ResiCare: expone el motor de triaje via FastAPI.
-
-Dos modos de uso:
-- modo="unico": clasifica con un solo proveedor. Con Ollama, usa el agente
-  completo (ReAct + tool calling). Con Groq, clasifica directamente con el
-  contexto del residente ya resuelto.
-- modo="comparar": clasifica con AMBOS proveedores sobre el mismo texto,
-  para la comparacion de coste/latencia/calidad del dashboard.
 """
 import json
 from typing import Optional, Literal
@@ -139,6 +132,7 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
             herramientas=HERRAMIENTAS_AGENTE,
             ejecutores=EJECUTORES_AGENTE,
             json_schema=TriajeIncidencia.model_json_schema(),
+            herramientas_obligatorias={"consultar_residente", "buscar_incidencias_similares"} if residente_id else None,
         )
 
     incidencia, intentos = validar_con_reintento(

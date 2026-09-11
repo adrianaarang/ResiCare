@@ -1,7 +1,7 @@
 """
 Tests del orquestador del agente: dispatch de tool calling, proteccion
-contra argumentos alucinados, y el limite de turnos ante bucles sin fin.
-Todo simulado (mock) para no depender de tener Ollama corriendo.
+contra argumentos alucinados, herramientas obligatorias, y el limite
+de turnos ante bucles sin fin. Todo simulado (mock).
 """
 import json
 from unittest.mock import patch, MagicMock
@@ -38,7 +38,6 @@ def _respuesta_final(contenido: dict):
 
 
 def test_agente_llama_a_la_herramienta_y_devuelve_respuesta_final():
-    """Ciclo ReAct basico: pide una herramienta, la recibe, responde."""
     turno_1 = _respuesta_con_tool_call("consultar_residente", {"residente_id": "res-204"})
     turno_2 = _respuesta_final({"categoria": "clinica", "urgencia": "alta"})
 
@@ -62,8 +61,6 @@ def test_agente_llama_a_la_herramienta_y_devuelve_respuesta_final():
 
 
 def test_agente_agota_turnos_lanza_runtime_error():
-    """Si el modelo nunca deja de pedir herramientas, no debe colgarse:
-    debe fallar de forma controlada tras max_turnos."""
     turno_que_nunca_termina = _respuesta_con_tool_call("consultar_residente", {"residente_id": "res-204"})
     ejecutor = MagicMock(return_value="{}")
 
@@ -79,9 +76,34 @@ def test_agente_agota_turnos_lanza_runtime_error():
             )
 
 
+def test_agente_rechaza_respuesta_final_sin_herramienta_obligatoria():
+    """Caso real que vimos: el modelo intento clasificar sin consultar el
+    contexto del residente. El orquestador debe rechazar ese intento y
+    forzar que llame a la herramienta antes de aceptar la respuesta."""
+    intento_sin_consultar = _respuesta_final({"categoria": "caida", "urgencia": "baja"})
+    llama_herramienta = _respuesta_con_tool_call("consultar_residente", {"residente_id": "res-204"})
+    respuesta_correcta = _respuesta_final({"categoria": "caida", "urgencia": "alta"})
+
+    ejecutor = MagicMock(return_value=json.dumps({"flags": ["riesgo_caida"]}))
+
+    with patch(
+        "app.agent.orchestrator.requests.post",
+        side_effect=[intento_sin_consultar, llama_herramienta, respuesta_correcta],
+    ) as mock_post:
+        resultado = ejecutar_agente(
+            modelo="llama3.2:3b",
+            system_prompt="...",
+            user_prompt="Incidencia: mareo en res-204.",
+            herramientas=[{}],
+            ejecutores={"consultar_residente": ejecutor},
+            herramientas_obligatorias={"consultar_residente"},
+        )
+
+    assert json.loads(resultado)["urgencia"] == "alta"
+    assert mock_post.call_count == 3
+
+
 def test_filtrar_argumentos_ignora_claves_alucinadas():
-    """Caso real que ocurrio con Ollama: el modelo anadio 'razonamiento'
-    a una llamada que solo acepta 'residente_id'."""
     def funcion_de_prueba(residente_id: str) -> str:
         return residente_id
 
@@ -93,8 +115,6 @@ def test_filtrar_argumentos_ignora_claves_alucinadas():
 
 
 def test_ejecutar_herramienta_segura_no_rompe_ante_argumento_faltante():
-    """Si al modelo se le olvida un argumento obligatorio, se captura como
-    error controlado en vez de propagar la excepcion."""
     def funcion_de_prueba(residente_id: str) -> str:
         return residente_id
 
