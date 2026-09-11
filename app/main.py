@@ -132,8 +132,7 @@ def _clasificar_con_agente(texto: str, residente_id: Optional[str]):
             herramientas=HERRAMIENTAS_AGENTE,
             ejecutores=EJECUTORES_AGENTE,
             json_schema=TriajeIncidencia.model_json_schema(),
-            herramientas_obligatorias={"consultar_residente", "buscar_incidencias_similares"} if residente_id else None,
-        )
+            herramientas_obligatorias={"consultar_residente"} if residente_id else None,        )
 
     incidencia, intentos = validar_con_reintento(
         funcion_generadora=llamar,
