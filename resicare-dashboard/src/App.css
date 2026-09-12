@@ -524,3 +524,122 @@ h2, h3 {
     right: 0;
   }
 }
+
+.pantalla-identificacion {
+  max-width: 400px;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pantalla-identificacion select {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #E0DDD3;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.pantalla-identificacion button {
+  padding: 0.7rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  background: #5B7553;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.pantalla-identificacion button:disabled {
+  background: #A0A0A0;
+  cursor: not-allowed;
+}
+
+.boton-cambiar-usuario {
+  background: none;
+  border: none;
+  color: #5B7553;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+}
+
+.formulario-alta-personal {
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.formulario-alta-personal label {
+  flex: 1;
+  min-width: 160px;
+}
+
+.lista-personal {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.fila-personal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border: 1px solid #E8E4D8;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}
+
+.fila-personal span:first-child {
+  flex: 1;
+  font-weight: 600;
+}
+
+.etiqueta-rol {
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.etiqueta-rol-administrador {
+  background: #5B7553;
+  color: white;
+}
+
+.etiqueta-rol-enfermera {
+  background: #E8E4D8;
+  color: #5F5E5A;
+}
+
+.boton-baja {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #B3261E;
+  border-radius: 6px;
+  background: white;
+  color: #B3261E;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.boton-baja:hover {
+  background: #B3261E;
+  color: white;
+}
+
+.usuario-login {
+  color: #7A7A63;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.aviso-alta-creada {
+  line-height: 1.6;
+}

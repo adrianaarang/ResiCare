@@ -19,7 +19,7 @@ export async function obtenerLibro(residenteId = "") {
   return respuesta.json();
 }
 
-export async function enviarTriaje({ texto, residenteId, modo, proveedor, turno, fechaIncidente }) {
+export async function enviarTriaje({ texto, residenteId, modo, proveedor, turno, fechaIncidente, registradoPor }) {
   const respuesta = await fetch(`${BASE_URL}/triaje`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -30,6 +30,7 @@ export async function enviarTriaje({ texto, residenteId, modo, proveedor, turno,
       proveedor,
       turno,
       fecha_incidente: fechaIncidente,
+      registrado_por: registradoPor || null,
     }),
   });
 
@@ -44,6 +45,35 @@ export async function enviarTriaje({ texto, residenteId, modo, proveedor, turno,
 
   return datos;
 }
+
+export async function obtenerPersonal() {
+  const respuesta = await fetch(`${BASE_URL}/personal`);
+  if (!respuesta.ok) {
+    throw new Error("No se pudo obtener la lista de personal");
+  }
+  return respuesta.json();
+}
+
+export async function crearPersonal(nombre, rol) {
+  const respuesta = await fetch(`${BASE_URL}/personal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, rol }),
+  });
+  if (!respuesta.ok) {
+    throw new Error("No se pudo dar de alta a esa persona");
+  }
+  return respuesta.json();
+}
+
+export async function eliminarPersonal(id) {
+  const respuesta = await fetch(`${BASE_URL}/personal/${id}`, { method: "DELETE" });
+  if (!respuesta.ok) {
+    throw new Error("No se pudo dar de baja a esa persona");
+  }
+  return respuesta.json();
+}
+
 export async function login(usuario, password) {
   const respuesta = await fetch(`${BASE_URL}/login`, {
     method: "POST",
@@ -52,7 +82,7 @@ export async function login(usuario, password) {
   });
   const datos = await respuesta.json();
   if (!respuesta.ok) {
-    throw new Error(datos.detail || "Usuario o contraseña incorrectos");
+    throw new Error(datos.detail || "Usuario o contrasena incorrectos");
   }
   return datos;
 }
@@ -71,7 +101,7 @@ export async function cambiarPassword({ usuario, passwordActual, passwordNueva, 
   });
   const datos = await respuesta.json();
   if (!respuesta.ok) {
-    throw new Error(datos.detail || "No se pudo cambiar la contraseña");
+    throw new Error(datos.detail || "No se pudo cambiar la contrasena");
   }
   return datos;
 }
@@ -93,7 +123,7 @@ export async function restablecerPassword({ usuario, respuesta: respuestaSecreta
   });
   const datos = await respuesta.json();
   if (!respuesta.ok) {
-    throw new Error(datos.detail || "No se pudo restablecer la contraseña");
+    throw new Error(datos.detail || "No se pudo restablecer la contrasena");
   }
   return datos;
 }

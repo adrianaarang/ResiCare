@@ -4,11 +4,23 @@
     "nombre": "Adriana Aránguez García",
     "usuario": "aaranguez",
     "rol": "administrador",
-    "password_hash": "0b5a31ce2a2a8d13656119748376e217a12ac9523047f2dfde4834af619102bd",
-    "sal": "a2e8b61a1fe60506924002ec00444f32",
-    "debe_cambiar_password": true,
-    "pregunta_secreta": null,
-    "respuesta_hash": null,
-    "respuesta_sal": null
+    "password_hash": "f19a7162fa630669b3a13b8f0c17e5ebf301dc6be5ddc17803584b6eaec666b2",
+    "sal": "125b4a1a96d350365d427c681775488b",
+    "debe_cambiar_password": false,
+    "pregunta_secreta": "Nombre de tu perro",
+    "respuesta_hash": "7c04e86e54f9a2472e152c0bb8defa0dc6375554fc133ad7749ede5f6beefab9",
+    "respuesta_sal": "9b673e739917ca51bea52a2da46286b8"
+  },
+  {
+    "id": "enf-2b32aa4e",
+    "nombre": "msoria",
+    "usuario": "msoria",
+    "rol": "enfermera",
+    "password_hash": "fd1bf2b1200307907ed61ab750215eecc70eeecd64ff5e19cdb754b938b84ebc",
+    "sal": "77aca868fa7bff19ee8e6b596e732040",
+    "debe_cambiar_password": false,
+    "pregunta_secreta": "nombre de mi madre",
+    "respuesta_hash": "9cc8c00a9c168be288d582f213775820ed0a4b6422c97fc85dc8236c9fc985ff",
+    "respuesta_sal": "c1117384a2629843af53e404363e690e"
   }
 ]
