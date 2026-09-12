@@ -1,0 +1,14 @@
+[
+  {
+    "id": "enf-admin01",
+    "nombre": "Adriana Aránguez García",
+    "usuario": "aaranguez",
+    "rol": "administrador",
+    "password_hash": "0b5a31ce2a2a8d13656119748376e217a12ac9523047f2dfde4834af619102bd",
+    "sal": "a2e8b61a1fe60506924002ec00444f32",
+    "debe_cambiar_password": true,
+    "pregunta_secreta": null,
+    "respuesta_hash": null,
+    "respuesta_sal": null
+  }
+]
