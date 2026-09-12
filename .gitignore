@@ -1,3 +1,24 @@
+# Variables de entorno (contiene tu clave de Groq)
 .env
-tests/test_libro_incidencias.db
+
+# Bases de datos con datos reales (incluye contraseñas cifradas de personal, incidencias)
 data/libro_incidencias.db
+data/chroma_db/
+tests/test_libro_incidencias.db
+
+# Entornos virtuales de Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Frontend (Node)
+resicare-dashboard/node_modules/
+resicare-dashboard/dist/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
