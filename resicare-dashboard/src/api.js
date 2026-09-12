@@ -44,3 +44,56 @@ export async function enviarTriaje({ texto, residenteId, modo, proveedor, turno,
 
   return datos;
 }
+export async function login(usuario, password) {
+  const respuesta = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuario, password }),
+  });
+  const datos = await respuesta.json();
+  if (!respuesta.ok) {
+    throw new Error(datos.detail || "Usuario o contraseña incorrectos");
+  }
+  return datos;
+}
+
+export async function cambiarPassword({ usuario, passwordActual, passwordNueva, preguntaSecreta, respuestaSecreta }) {
+  const respuesta = await fetch(`${BASE_URL}/cambiar-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usuario,
+      password_actual: passwordActual,
+      password_nueva: passwordNueva,
+      pregunta_secreta: preguntaSecreta || null,
+      respuesta_secreta: respuestaSecreta || null,
+    }),
+  });
+  const datos = await respuesta.json();
+  if (!respuesta.ok) {
+    throw new Error(datos.detail || "No se pudo cambiar la contraseña");
+  }
+  return datos;
+}
+
+export async function obtenerPreguntaSecreta(usuario) {
+  const respuesta = await fetch(`${BASE_URL}/recuperar-password/pregunta?usuario=${encodeURIComponent(usuario)}`);
+  const datos = await respuesta.json();
+  if (!respuesta.ok) {
+    throw new Error(datos.detail || "No se pudo obtener la pregunta secreta");
+  }
+  return datos.pregunta;
+}
+
+export async function restablecerPassword({ usuario, respuesta: respuestaSecreta, passwordNueva }) {
+  const respuesta = await fetch(`${BASE_URL}/recuperar-password/restablecer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuario, respuesta: respuestaSecreta, password_nueva: passwordNueva }),
+  });
+  const datos = await respuesta.json();
+  if (!respuesta.ok) {
+    throw new Error(datos.detail || "No se pudo restablecer la contraseña");
+  }
+  return datos;
+}
