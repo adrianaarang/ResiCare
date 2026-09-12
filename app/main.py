@@ -9,6 +9,7 @@ Dos modos de uso:
 """
 import json
 import uuid
+from pathlib import Path
 from typing import Optional, Literal
 
 from dotenv import load_dotenv
@@ -33,6 +34,15 @@ from app.providers.comercial_provider import GroqProvider
 from app.core.retry import validar_con_reintento, TriajeFallidoError
 from app.core.metrics import registro_global
 from app.core.almacen import inicializar_db, guardar_incidencia, listar_incidencias
+from app.core.personal import (
+    listar_personal_publico,
+    crear_personal,
+    eliminar_personal,
+    verificar_login,
+    cambiar_password,
+    obtener_pregunta_secreta,
+    restablecer_password_con_respuesta,
+)
 from app.rag.vectorstore import (
     TOOL_BUSCAR_INCIDENCIAS_SIMILARES,
     buscar_incidencias_similares,
@@ -75,6 +85,7 @@ class TriajeRequest(BaseModel):
     proveedor: Literal["ollama", "groq"] = "ollama"
     turno: Optional[Literal["manana", "tarde", "noche"]] = None
     fecha_incidente: Optional[str] = None
+    registrado_por: Optional[str] = None
 
 
 def _obtener_residente(residente_id: Optional[str]) -> Optional[Residente]:
@@ -92,6 +103,7 @@ def _guardar_en_libro_y_rag(
     turno: Optional[str] = None,
     fecha_incidente: Optional[str] = None,
     reincidencia: Optional[dict] = None,
+    registrado_por: Optional[str] = None,
 ) -> None:
     es_reincidencia = bool(reincidencia and reincidencia.get("detectada"))
     fecha_previa = None
@@ -108,6 +120,7 @@ def _guardar_en_libro_y_rag(
         es_reincidencia=es_reincidencia,
         fecha_reincidencia_previa=fecha_previa,
         casos_reincidencia_json=casos_json,
+        registrado_por=registrado_por,
     )
     indexar_nueva_incidencia(
         incidencia_id=f"libro-{uuid.uuid4().hex}",
@@ -229,6 +242,88 @@ def residentes():
     ]
 
 
+@app.get("/personal")
+def personal():
+    return listar_personal_publico()
+
+
+class PersonalRequest(BaseModel):
+    nombre: str
+    rol: Literal["enfermera", "administrador"] = "enfermera"
+
+
+@app.post("/personal")
+def alta_personal(payload: PersonalRequest):
+    return crear_personal(payload.nombre, payload.rol)
+
+
+@app.delete("/personal/{persona_id}")
+def baja_personal(persona_id: str):
+    eliminado = eliminar_personal(persona_id)
+    if not eliminado:
+        raise HTTPException(status_code=404, detail="No existe esa persona")
+    return {"eliminado": True}
+
+
+class LoginRequest(BaseModel):
+    usuario: str
+    password: str
+
+
+@app.post("/login")
+def login(payload: LoginRequest):
+    persona = verificar_login(payload.usuario, payload.password)
+    if not persona:
+        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+    return {
+        "nombre": persona["nombre"],
+        "usuario": persona["usuario"],
+        "rol": persona["rol"],
+        "debe_cambiar_password": persona["debe_cambiar_password"],
+    }
+
+
+class CambiarPasswordRequest(BaseModel):
+    usuario: str
+    password_actual: str
+    password_nueva: str
+    pregunta_secreta: Optional[str] = None
+    respuesta_secreta: Optional[str] = None
+
+
+@app.post("/cambiar-password")
+def cambiar_password_endpoint(payload: CambiarPasswordRequest):
+    ok = cambiar_password(
+        payload.usuario, payload.password_actual, payload.password_nueva,
+        pregunta_secreta=payload.pregunta_secreta, respuesta_secreta=payload.respuesta_secreta,
+    )
+    if not ok:
+        raise HTTPException(status_code=401, detail="Contraseña actual incorrecta")
+    return {"actualizado": True}
+
+
+@app.get("/recuperar-password/pregunta")
+def pregunta_secreta_endpoint(usuario: str):
+    pregunta = obtener_pregunta_secreta(usuario)
+    if not pregunta:
+        raise HTTPException(status_code=404, detail="No hay pregunta secreta configurada para ese usuario")
+    return {"pregunta": pregunta}
+
+
+class RestablecerPasswordRequest(BaseModel):
+    usuario: str
+    respuesta: str
+    password_nueva: str
+
+
+@app.post("/recuperar-password/restablecer")
+def restablecer_password_endpoint(payload: RestablecerPasswordRequest):
+    ok = restablecer_password_con_respuesta(payload.usuario, payload.respuesta, payload.password_nueva)
+    if not ok:
+        raise HTTPException(status_code=401, detail="Respuesta secreta incorrecta")
+    return {"restablecido": True}
+
+
 @app.get("/metricas")
 def metricas():
     return registro_global.resumen()
@@ -250,7 +345,7 @@ def triaje(payload: TriajeRequest):
                 _guardar_en_libro_y_rag(
                     incidencia, proveedor="ollama",
                     turno=payload.turno, fecha_incidente=payload.fecha_incidente,
-                    reincidencia=reincidencia,
+                    reincidencia=reincidencia, registrado_por=payload.registrado_por,
                 )
                 return {
                     "proveedor": "ollama",
@@ -269,7 +364,7 @@ def triaje(payload: TriajeRequest):
                 _guardar_en_libro_y_rag(
                     incidencia, proveedor="groq",
                     turno=payload.turno, fecha_incidente=payload.fecha_incidente,
-                    reincidencia=reincidencia,
+                    reincidencia=reincidencia, registrado_por=payload.registrado_por,
                 )
                 return {
                     "proveedor": "groq",
@@ -294,7 +389,7 @@ def triaje(payload: TriajeRequest):
                     _guardar_en_libro_y_rag(
                         incidencia, proveedor=nombre,
                         turno=payload.turno, fecha_incidente=payload.fecha_incidente,
-                        reincidencia=reincidencia,
+                        reincidencia=reincidencia, registrado_por=payload.registrado_por,
                     )
                     resultados[nombre] = {
                         "intentos": intentos,
