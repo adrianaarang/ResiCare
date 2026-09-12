@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/resicare_logo.png" alt="ResiCare" width="450">
+  <img src="resicare-dahboard/img/resicare_logo.png" alt="ResiCare" width="450">
 </p>
 
 # ResiCare
