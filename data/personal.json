@@ -12,15 +12,27 @@
     "respuesta_sal": "9b673e739917ca51bea52a2da46286b8"
   },
   {
-    "id": "enf-2b32aa4e",
-    "nombre": "msoria",
-    "usuario": "msoria",
+    "id": "enf-9a9955ac",
+    "nombre": "maria jimenez",
+    "usuario": "mjimenez",
     "rol": "enfermera",
-    "password_hash": "fd1bf2b1200307907ed61ab750215eecc70eeecd64ff5e19cdb754b938b84ebc",
-    "sal": "77aca868fa7bff19ee8e6b596e732040",
+    "password_hash": "61f3fbf6ecf24fba62e31a74a0329c91d99218cf9ce93ef5609626232ec06983",
+    "sal": "a10689b7eba6af161213b120efa17139",
     "debe_cambiar_password": false,
-    "pregunta_secreta": "nombre de mi madre",
-    "respuesta_hash": "9cc8c00a9c168be288d582f213775820ed0a4b6422c97fc85dc8236c9fc985ff",
-    "respuesta_sal": "c1117384a2629843af53e404363e690e"
+    "pregunta_secreta": "el nombre de tu mascota",
+    "respuesta_hash": "38dff95580791facc230e5df3b74f4dcf10193c8d14df8438db555cd2622ddcb",
+    "respuesta_sal": "9c760851bc66862e59dd0add84802239"
+  },
+  {
+    "id": "enf-05a01fd3",
+    "nombre": "Helena García",
+    "usuario": "hgarcia",
+    "rol": "enfermera",
+    "password_hash": "b2167d9d48d2b0f73a1a110664849398d86df9995e82610c0e92b36823491ab5",
+    "sal": "0b100cd282e2ca335dbb09a2ded6fd0b",
+    "debe_cambiar_password": true,
+    "pregunta_secreta": null,
+    "respuesta_hash": null,
+    "respuesta_sal": null
   }
 ]

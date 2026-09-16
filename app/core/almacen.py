@@ -1,4 +1,4 @@
-"""
+﻿"""
 Persistencia del Libro de Incidencias en SQLite.
 """
 import sqlite3
@@ -34,7 +34,8 @@ def inicializar_db() -> None:
                 proveedor TEXT NOT NULL,
                 es_reincidencia INTEGER NOT NULL DEFAULT 0,
                 fecha_reincidencia_previa TEXT,
-                casos_reincidencia_json TEXT
+                casos_reincidencia_json TEXT,
+                registrado_por TEXT
             )
         """)
 
@@ -47,6 +48,7 @@ def guardar_incidencia(
     es_reincidencia: bool = False,
     fecha_reincidencia_previa: Optional[str] = None,
     casos_reincidencia_json: Optional[str] = None,
+    registrado_por: Optional[str] = None,
 ) -> tuple[int, str]:
     fecha_iso = datetime.now(timezone.utc).isoformat()
     fecha_incidente = fecha_incidente or datetime.now(timezone.utc).date().isoformat()
@@ -56,8 +58,9 @@ def guardar_incidencia(
             """INSERT INTO incidencias
                (fecha, fecha_incidente, turno, residente_id, texto_original,
                 categoria, urgencia, resumen, razonamiento, proveedor,
-                es_reincidencia, fecha_reincidencia_previa, casos_reincidencia_json)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                es_reincidencia, fecha_reincidencia_previa, casos_reincidencia_json,
+                registrado_por)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 fecha_iso,
                 fecha_incidente,
@@ -72,6 +75,7 @@ def guardar_incidencia(
                 1 if es_reincidencia else 0,
                 fecha_reincidencia_previa,
                 casos_reincidencia_json,
+                registrado_por,
             ),
         )
         return cursor.lastrowid, fecha_iso
