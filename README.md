@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resicare-dashboard/img/resicare_logo.png" alt="ResiCare" width="450">
+  <img src="docs/resicare_logo.png" alt="ResiCare" width="450">
 </p>
 
 # ResiCare
@@ -15,6 +15,7 @@ Motor de triaje inteligente para el **Libro de Incidencias de Enfermería** en r
 - **Persiste todo** en un Libro de Incidencias (SQLite), organizado por residente → año → mes → día → turno de enfermería
 - **Autenticación de personal**: usuario y contraseña (cifrada con PBKDF2), cambio de contraseña obligatorio en el primer acceso, y recuperación vía pregunta secreta. Un rol de administrador puede dar de alta y baja al resto del personal
 - Validación estricta con Pydantic: si el LLM alucina un formato incorrecto, el sistema lo detecta y le pide que se corrija, sin romper el servicio
+- Incluye un **notebook de demostración** (`notebooks/exploracion.ipynb`) que recorre cada pieza del sistema de forma reproducible, incluyendo una auditoría de sesgos con hallazgos reales
 
 ## Arquitectura
 
@@ -34,6 +35,7 @@ app/
 
 data/                     # Datos de ejemplo, base de datos SQLite, índice ChromaDB
 tests/                    # Batería de tests con Pytest
+notebooks/                # Notebook de demostración: esquema, proveedores, RAG, auditoría de sesgos
 resicare-dashboard/       # Frontend en React (Vite)
 ```
 
@@ -127,3 +129,4 @@ pytest tests/ -v
 - **La comparación entre proveedores usa clasificación directa** (sin agente/tool calling) para ambos, con el contexto del residente ya resuelto e inyectado en el prompt — así se compara la calidad del modelo en sí, sin que la capacidad de tool calling de cada uno distorsione el resultado.
 - **La detección de reincidencia es determinista, no depende del LLM**: el backend consulta el RAG por su cuenta tras cada clasificación y adjunta el resultado (casos similares, con fecha y similitud) de forma garantizada, en vez de confiar en que el modelo lo mencione bien en su razonamiento.
 - **Autenticación simple, no de nivel producción**: pensada para uso en la intranet de la residencia (sin tokens de sesión, sin límite de intentos de login). Las contraseñas y respuestas secretas se guardan siempre cifradas (PBKDF2 + sal por usuario), nunca en texto plano.
+- **Auditoría de sesgos con hallazgo real**: se diseñaron pares de incidencias idénticas salvo un dato demográfico (ver `notebooks/exploracion.ipynb`, secciones 7-8). Se detectó que el modelo local bajaba sistemáticamente la urgencia al mencionar deterioro cognitivo — confirmado como reproducible (temperature=0, 3 repeticiones idénticas) y aislado al modelo local (el proveedor comercial, con el mismo prompt, no reproducía la caída). Esto refuerza la necesidad del diseño human-in-the-loop del sistema.
