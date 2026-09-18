@@ -4,7 +4,7 @@
 
 ## Demo en vídeo
 
-[![Ver demo de ResiCare](docs/resicare_logo.png)](resicare-dashboard/img/ResiCare-Adriana_Aranguez.mp4)
+[![Ver demo de ResiCare](resicare-dashboard/img/resicare_logo.png)](resicare-dashboard/img/ResiCare-Adriana_Aranguez.mp4)
 
 *Haz clic en la imagen para ver la demostración completa (vídeo).*
 
