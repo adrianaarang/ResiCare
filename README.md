@@ -2,6 +2,12 @@
   <img src="resicare-dashboard/img/resicare_logo.png" alt="ResiCare" width="450">
 </p>
 
+## Demo en vídeo
+
+[![Ver demo de ResiCare](docs/resicare_logo.png)](resicare-dashboard/img/ResiCare-Adriana_Aranguez.mp4)
+
+*Haz clic en la imagen para ver la demostración completa (vídeo).*
+
 # ResiCare
 
 Motor de triaje inteligente para el **Libro de Incidencias de Enfermería** en residencias de ancianos. Clasifica automáticamente el texto libre de una incidencia (categoría, urgencia, resumen) usando un LLM, con el contexto clínico real del residente (flags de riesgo, condiciones crónicas) y el historial de incidencias pasadas — pero siempre con un profesional validando la decisión final antes de registrarla (human-in-the-loop).
